@@ -6,7 +6,13 @@
 #include <string>
 #include <iostream>
 
+#include <ctime> //Added
+#include <vector> //Added
+#include <numeric> //Added
+
 #pragma once
+// prototyping
+float PercentPackageLoss(int sent, int rec);
 
 class WSASession
 {
@@ -28,6 +34,9 @@ private:
 class UDPSocket
 {
 public:
+	int totalRecieved = 0; // Added
+	std::vector<int> timeStamp;
+
 	UDPSocket()
 	{
 		sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -63,7 +72,11 @@ public:
 		if (ret < 0)
 			throw std::system_error(WSAGetLastError(), std::system_category(), "recvfrom failed");
 
-		// make the buffer zero terminated
+		timeStamp.push_back(std::clock());
+
+		totalRecieved++; // Added
+
+						 // make the buffer zero terminated
 		buffer[ret] = 0;
 		return from;
 	}
@@ -77,6 +90,31 @@ public:
 		int ret = bind(sock, reinterpret_cast<SOCKADDR *>(&add), sizeof(add));
 		if (ret < 0)
 			throw std::system_error(WSAGetLastError(), std::system_category(), "Bind failed");
+	}
+
+	int RecieveCount() //Added
+	{
+		//totalRecieved++;
+
+		return totalRecieved;
+	}
+
+	double AveragePing()
+	{
+		std::vector<double> difference;
+
+		for (int i = 1; i < timeStamp.size(); i++)
+		{
+
+			difference.push_back(timeStamp[i] - timeStamp[i - 1]);
+
+		}
+
+		int sum = std::accumulate(difference.begin(), difference.end(), 0);
+
+		double average = sum / difference.size();
+
+		return average;
 	}
 
 private:

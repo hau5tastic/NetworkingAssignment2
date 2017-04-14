@@ -6,7 +6,16 @@
 #include <string>
 #include <iostream>
 
+#include <ctime> //Added
+#include <vector> //Added
+#include <numeric> //Added
+
 #pragma once
+
+// prototyping
+class UDPSocket;
+float PercentPackageLoss(int sent, int rec);
+void LogPacketInfo(UDPSocket Socket);
 
 class WSASession
 {
@@ -28,6 +37,10 @@ private:
 class UDPSocket
 {
 public:
+	int totalRecieved = 0; // Added
+	int totalSent = 0; //Added
+	std::vector<int> timeStamp; //Added
+
 	UDPSocket()
 	{
 		sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -46,12 +59,18 @@ public:
 		add.sin_addr.s_addr = inet_addr(address.c_str());
 		add.sin_port = htons(port);
 		int ret = sendto(sock, buffer, len, flags, reinterpret_cast<SOCKADDR *>(&add), sizeof(add));
+
+		totalSent++; //Added
+
 		if (ret < 0)
 			throw std::system_error(WSAGetLastError(), std::system_category(), "sendto failed");
 	}
 	void SendTo(sockaddr_in& address, const char* buffer, int len, int flags = 0)
 	{
 		int ret = sendto(sock, buffer, len, flags, reinterpret_cast<SOCKADDR *>(&address), sizeof(address));
+
+		totalSent++; //Added
+
 		if (ret < 0)
 			throw std::system_error(WSAGetLastError(), std::system_category(), "sendto failed");
 	}
@@ -63,7 +82,11 @@ public:
 		if (ret < 0)
 			throw std::system_error(WSAGetLastError(), std::system_category(), "recvfrom failed");
 
-		// make the buffer zero terminated
+		timeStamp.push_back(std::clock());
+
+		totalRecieved++; // Added
+
+						 // make the buffer zero terminated
 		buffer[ret] = 0;
 		return from;
 	}
@@ -77,6 +100,31 @@ public:
 		int ret = bind(sock, reinterpret_cast<SOCKADDR *>(&add), sizeof(add));
 		if (ret < 0)
 			throw std::system_error(WSAGetLastError(), std::system_category(), "Bind failed");
+	}
+
+	int RecieveCount() //Added
+	{
+		//totalRecieved++;
+
+		return totalRecieved;
+	}
+
+	double AveragePing()
+	{
+		std::vector<double> difference;
+
+		for (int i = 1; i < timeStamp.size(); i++)
+		{
+
+			difference.push_back(timeStamp[i] - timeStamp[i-1]);
+
+		}
+
+		int sum = std::accumulate(difference.begin(), difference.end(), 0);
+
+		double average = sum / difference.size();
+
+		return average;
 	}
 
 private:
