@@ -115,15 +115,11 @@ public:
 
 		for (int i = 1; i < timeStamp.size(); i++)
 		{
-
 			difference.push_back(timeStamp[i] - timeStamp[i-1]);
-
 		}
 
 		int sum = std::accumulate(difference.begin(), difference.end(), 0);
-
 		double average = sum / difference.size();
-
 		return average;
 	}
 

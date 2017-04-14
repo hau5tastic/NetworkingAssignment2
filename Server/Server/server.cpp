@@ -20,14 +20,13 @@ int main()
 		WSASession Session;
 		UDPSocket Socket;
 
-
 		Socket.Bind(DEFAULT_PORT);
 		while (serverOptions != "exit")
 		{
 			sockaddr_in add = Socket.RecvFrom(buffer, sizeof(buffer));
 			std::string input(buffer);
 
-			//std::cout << buffer << "  " << std::clock() << "\n";
+			std::cout << "Packet Recieved " << buffer << " at " << std::clock() << "\n";
 			Socket.SendTo(add, input.c_str(), input.size());
 
 			if (Socket.totalRecieved >= NUMBER_OF_PACKETS)
@@ -55,7 +54,7 @@ float PercentPackageLoss(int sent, int rec)
 
 void LogPacketInfo(UDPSocket Socket)
 {
-	std::cout << "Total Packets Recieved: " << Socket.totalRecieved << "\n";
+	std::cout << "\n" << "Total Packets Recieved: " << Socket.totalRecieved << "\n";
 	std::cout << "Total Packets Sent: " << Socket.totalSent << "\n";
 	std::cout << "Percentage Of Packets Lost: " << std::to_string(PercentPackageLoss(Socket.totalSent, Socket.totalRecieved)) << "\n";
 	std::cout << "Average Ping: " << Socket.AveragePing() << "\n";

@@ -12,7 +12,10 @@
 
 #pragma once
 // prototyping
+class UDPSocket;
 float PercentPackageLoss(int sent, int rec);
+void LogPacketInfo(UDPSocket Socket);
+void SendAndRecievePackets(UDPSocket Socket);
 
 class WSASession
 {
@@ -35,6 +38,7 @@ class UDPSocket
 {
 public:
 	int totalRecieved = 0; // Added
+	int totalSent = 0; //Added
 	std::vector<int> timeStamp;
 
 	UDPSocket()
@@ -55,12 +59,14 @@ public:
 		add.sin_addr.s_addr = inet_addr(address.c_str());
 		add.sin_port = htons(port);
 		int ret = sendto(sock, buffer, len, flags, reinterpret_cast<SOCKADDR *>(&add), sizeof(add));
+		totalSent++;
 		if (ret < 0)
 			throw std::system_error(WSAGetLastError(), std::system_category(), "sendto failed");
 	}
 	void SendTo(sockaddr_in& address, const char* buffer, int len, int flags = 0)
 	{
 		int ret = sendto(sock, buffer, len, flags, reinterpret_cast<SOCKADDR *>(&address), sizeof(address));
+		totalSent++;
 		if (ret < 0)
 			throw std::system_error(WSAGetLastError(), std::system_category(), "sendto failed");
 	}
