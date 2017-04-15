@@ -141,8 +141,12 @@ bool ValidateIP(std::string ip)
 				result = false;
 			}
 		}
-
+		
 		if (periodCount != 3)
+			result = false;
+
+		int num = ip[ip.length() - 1];
+		if (!CheckIfNumber(num))
 			result = false;
 	}
 	else

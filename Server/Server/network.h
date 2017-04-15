@@ -9,6 +9,7 @@
 #include <ctime> //Added
 #include <vector> //Added
 #include <numeric> //Added
+#include <algorithm>
 
 #pragma once
 
@@ -17,6 +18,9 @@ class UDPSocket;
 float PercentPackageLoss(int sent, int rec);
 void LogPacketInfo(UDPSocket Socket);
 std::string GetTime();
+void AcceptClientConnection(sockaddr_in addr);
+bool AcceptedAddress(sockaddr_in addr);
+void RemoveAddress(sockaddr_in addr);
 
 class WSASession
 {
