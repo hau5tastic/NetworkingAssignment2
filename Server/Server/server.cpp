@@ -24,12 +24,12 @@ int main()
 			// recieve
 			sockaddr_in add = Socket.RecvFrom(buffer, sizeof(buffer));
 
-			std::cout	<< "Packet Recieved from "
-						<< std::to_string(add.sin_addr.S_un.S_un_b.s_b1) << '.'
-						<< std::to_string(add.sin_addr.S_un.S_un_b.s_b2) << '.'
-						<< std::to_string(add.sin_addr.S_un.S_un_b.s_b3) << '.'
-						<< std::to_string(add.sin_addr.S_un.S_un_b.s_b4)
-						<<" at " << GetTime() << " - " << buffer << "\n";
+			std::cout << "Packet Recieved from "
+				<< std::to_string(add.sin_addr.S_un.S_un_b.s_b1) << '.'
+				<< std::to_string(add.sin_addr.S_un.S_un_b.s_b2) << '.'
+				<< std::to_string(add.sin_addr.S_un.S_un_b.s_b3) << '.'
+				<< std::to_string(add.sin_addr.S_un.S_un_b.s_b4)
+				<< " at " << GetTime() << " - " << buffer << "\n";
 
 			// send
 			std::string input = GetTime();
@@ -40,7 +40,14 @@ int main()
 			{
 				LogPacketInfo(Socket);
 				Socket.totalRecieved = 0;
+				std::cout << "Enter Input: ";
 				std::cin >> serverOptions;
+			}
+			
+			if (serverOptions == "sort")
+			{
+				Socket.GetSortedPingTimes();
+				serverOptions = "";
 			}
 		}
 	}

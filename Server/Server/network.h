@@ -18,9 +18,9 @@ class UDPSocket;
 float PercentPackageLoss(int sent, int rec);
 void LogPacketInfo(UDPSocket Socket);
 std::string GetTime();
-void AcceptClientConnection(sockaddr_in addr);
-bool AcceptedAddress(sockaddr_in addr);
-void RemoveAddress(sockaddr_in addr);
+//void AcceptClientConnection(sockaddr_in addr);
+//bool AcceptedAddress(sockaddr_in addr);
+//void RemoveAddress(sockaddr_in addr);
 
 class WSASession
 {
@@ -119,6 +119,24 @@ public:
 		int sum = std::accumulate(difference.begin(), difference.end(), 0);
 		double average = sum / difference.size();
 		return average;
+	}
+
+	void GetSortedPingTimes()
+	{
+		std::vector<double> difference;
+
+		for (int i = 1; i < timeStamp.size(); i++)
+		{
+			difference.push_back(timeStamp[i] - timeStamp[i - 1]);
+		}
+
+		std::sort(difference.begin(), difference.end());
+
+		std::cout << "Sorted Ping Times: \n";
+		for (auto iter = difference.begin(); iter < difference.end(); iter++)
+		{
+			std::cout << *iter << std::endl;
+		}
 	}
 
 private:
