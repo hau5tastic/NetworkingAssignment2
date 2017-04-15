@@ -16,6 +16,7 @@
 class UDPSocket;
 float PercentPackageLoss(int sent, int rec);
 void LogPacketInfo(UDPSocket Socket);
+std::string GetTime();
 
 class WSASession
 {

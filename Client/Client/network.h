@@ -5,6 +5,7 @@
 #include <system_error>
 #include <string>
 #include <iostream>
+#include <stdio.h>
 
 #include <ctime> //Added
 #include <vector> //Added
@@ -16,6 +17,9 @@ class UDPSocket;
 float PercentPackageLoss(int sent, int rec);
 void LogPacketInfo(UDPSocket Socket);
 void SendAndRecievePackets(UDPSocket Socket);
+std::string GetTime();
+bool ValidateIP(std::string ip);
+void HandleClientInput();
 
 class WSASession
 {
