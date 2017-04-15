@@ -102,20 +102,13 @@ public:
 			throw std::system_error(WSAGetLastError(), std::system_category(), "Bind failed");
 	}
 
-	int RecieveCount() //Added
-	{
-		//totalRecieved++;
-
-		return totalRecieved;
-	}
-
 	double AveragePing()
 	{
 		std::vector<double> difference;
 
 		for (int i = 1; i < timeStamp.size(); i++)
 		{
-			difference.push_back(timeStamp[i] - timeStamp[i-1]);
+			difference.push_back(timeStamp[i] - timeStamp[i - 1]);
 		}
 
 		int sum = std::accumulate(difference.begin(), difference.end(), 0);

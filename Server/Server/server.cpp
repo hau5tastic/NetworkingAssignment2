@@ -10,10 +10,6 @@ std::string serverOptions;
 
 int main()
 {
-	//http://stackoverflow.com/questions/3220477/how-to-use-clock-in-c
-
-	//int numOfPacketsSent = 700;
-	//int numOfPacketsRec = 0;
 
 	try
 	{
@@ -29,13 +25,18 @@ int main()
 			std::cout << "Packet Recieved " << buffer << " at " << std::clock() << "\n";
 			Socket.SendTo(add, input.c_str(), input.size());
 
+			
+			//This if statement is making it so that the server cannot accept multiple clients
 			if (Socket.totalRecieved >= NUMBER_OF_PACKETS)
-			{
+			{		
+				LogPacketInfo(Socket);
+				Socket.totalRecieved = 0;
 				std::cin >> serverOptions;
 			}
+			
 		}
 
-		LogPacketInfo(Socket);
+
 	}
 	catch (std::system_error& e)
 	{

@@ -98,13 +98,6 @@ public:
 			throw std::system_error(WSAGetLastError(), std::system_category(), "Bind failed");
 	}
 
-	int RecieveCount() //Added
-	{
-		//totalRecieved++;
-
-		return totalRecieved;
-	}
-
 	double AveragePing()
 	{
 		std::vector<double> difference;
