@@ -124,6 +124,8 @@ void Listen(UDPSocket Socket)
 // sends and recieves stream of packets
 void SendAndRecievePackets(UDPSocket Socket)
 {
+	//Socket.totalSent = 0;
+
 	for (int i = 0; i < NUMBER_OF_PACKETS; ++i)
 	{
 		// recieve
@@ -163,7 +165,7 @@ void RemoveAddress(sockaddr_in addr)
 {
 	bool addrRemoved = false;
 
-	for (std::vector<sockaddr_in>::iterator it = connectedClients.begin(); it < connectedClients.end(); it++)
+	for (std::vector<sockaddr_in>::iterator it = connectedClients.begin(); it < connectedClients.end(); ++it)
 	{
 		if (it->sin_addr.S_un.S_addr == addr.sin_addr.S_un.S_addr)
 		{

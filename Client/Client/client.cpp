@@ -62,13 +62,13 @@ void SendAndRecievePackets(UDPSocket Socket)
 {
 	for (int i = 0; i < NUMBER_OF_PACKETS; i++)
 	{
-		data = GetTime();
+		data = std::to_string(PACKET_STREAM) + std::to_string(i);
 
 		Socket.SendTo(serverIP, DEFAULT_PORT, data.c_str(), data.size());
-		std::cout << "Packet " << i + 1 << " Sent at: " << data << "\n"; // milliseconds
+		std::cout << "Packet " << i + 1 << " Sent at: " << GetTime() << "\n"; // milliseconds
 
 		Socket.RecvFrom(buffer, DEFAULT_PORT);
-		std::cout << "Packet Recieved at: " << buffer << "\n";
+		std::cout << "Packet Recieved at: " << GetTime() << "\n";
 	}
 	LogPacketInfo(Socket);
 }
@@ -105,6 +105,7 @@ void HandleClientInput(UDPSocket Socket)
 	}
 }
 
+// request connection with server
 void RequestConnection(UDPSocket Socket)
 {
 	data = std::to_string(CONNECTION_REQUEST) + std::to_string(NUMBER_OF_PACKETS) + " Request to send packet stream";

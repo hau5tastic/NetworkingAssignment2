@@ -24,6 +24,17 @@ bool AcceptedAddress(sockaddr_in addr);
 void RemoveAddress(sockaddr_in addr);
 uint8_t GetHeaderCode(char* buffer);
 
+struct TimeStamp
+{
+	int index;
+	int time;
+
+	bool operator<(const TimeStamp& a) const
+	{
+		return time < a.time;
+	}
+};
+
 class WSASession
 {
 public:
@@ -125,19 +136,22 @@ public:
 
 	void GetSortedPingTimes()
 	{
-		std::vector<double> difference;
+		std::vector<TimeStamp> difference;
+		TimeStamp tmp;
 
 		for (int i = 1; i < timeStamp.size(); i++)
 		{
-			difference.push_back(timeStamp[i] - timeStamp[i - 1]);
+			tmp.index = i;
+			tmp.time = timeStamp[i] - timeStamp[i - 1];
+			difference.push_back(tmp);
 		}
 
 		std::sort(difference.begin(), difference.end());
 
 		std::cout << "Sorted Ping Times: \n";
-		for (auto iter = difference.begin(); iter < difference.end(); iter++)
+		for (auto iter = difference.begin(); iter != difference.end(); ++iter)
 		{
-			std::cout << *iter << std::endl;
+			std::cout << "Packet - " << iter->index << " Time - " << iter->time << std::endl;
 		}
 	}
 
