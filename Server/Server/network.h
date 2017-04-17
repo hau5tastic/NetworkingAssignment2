@@ -18,9 +18,11 @@ class UDPSocket;
 float PercentPackageLoss(int sent, int rec);
 void LogPacketInfo(UDPSocket Socket);
 std::string GetTime();
-//void AcceptClientConnection(sockaddr_in addr);
-//bool AcceptedAddress(sockaddr_in addr);
-//void RemoveAddress(sockaddr_in addr);
+void Listen(UDPSocket Socket);
+void SendAndRecievePackets(UDPSocket Socket);
+bool AcceptedAddress(sockaddr_in addr);
+void RemoveAddress(sockaddr_in addr);
+uint8_t GetHeaderCode(char* buffer);
 
 class WSASession
 {

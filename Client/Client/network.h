@@ -19,7 +19,11 @@ void LogPacketInfo(UDPSocket Socket);
 void SendAndRecievePackets(UDPSocket Socket);
 std::string GetTime();
 bool ValidateIP(std::string ip);
-void HandleClientInput();
+bool CheckIfNumber(int key);
+bool CheckPeriod(int key);
+void HandleClientInput(UDPSocket Socket);
+void RequestConnection(UDPSocket Socket);
+uint8_t GetHeaderCode(char* buffer);
 
 class WSASession
 {

@@ -2,8 +2,17 @@
 
 const USHORT DEFAULT_PORT = 100;
 const PCSTR SERVER_ADDRESS = "127.0.0.1";
-const int NUMBER_OF_PACKETS = 700;
+const int NUMBER_OF_PACKETS = 500;
 const int BUFFER_LENGTH = 100;
+
+/***************************************
+* IP Header Codes
+****************************************/
+const int HEADER_CODE_SIZE = 3;
+const uint8_t CONNECTION_REQUEST = 201;
+const uint8_t CONNECTION_ACCEPTED = 202;
+const uint8_t CONNECTION_REFUSED = 203;
+const uint8_t PACKET_STREAM = 204;
 
 char buffer[BUFFER_LENGTH];
 std::string serverOptions;
@@ -21,29 +30,11 @@ int main()
 		Socket.Bind(DEFAULT_PORT);
 		while (serverOptions != "exit")
 		{
-			// recieve
-			sockaddr_in add = Socket.RecvFrom(buffer, sizeof(buffer));
+			Listen(Socket);
 
-			std::cout << "Packet Recieved from "
-				<< std::to_string(add.sin_addr.S_un.S_un_b.s_b1) << '.'
-				<< std::to_string(add.sin_addr.S_un.S_un_b.s_b2) << '.'
-				<< std::to_string(add.sin_addr.S_un.S_un_b.s_b3) << '.'
-				<< std::to_string(add.sin_addr.S_un.S_un_b.s_b4)
-				<< " at " << GetTime() << " - " << buffer << "\n";
+			std::cout << "Awaiting Input: ";
+			std::cin >> serverOptions;
 
-			// send
-			std::string input = GetTime();
-			Socket.SendTo(add, input.c_str(), input.size());
-
-			//This if statement is making it so that the server cannot accept multiple clients
-			if (Socket.totalRecieved >= NUMBER_OF_PACKETS)
-			{
-				LogPacketInfo(Socket);
-				Socket.totalRecieved = 0;
-				std::cout << "Enter Input: ";
-				std::cin >> serverOptions;
-			}
-			
 			if (serverOptions == "sort")
 			{
 				Socket.GetSortedPingTimes();
@@ -84,33 +75,73 @@ std::string GetTime()
 	return std::to_string((int)round((std::clock() - start) / (double)CLOCKS_PER_SEC * 1000));
 }
 
-/*// asks server if they want to accept incoming connection
-void AcceptClientConnection(sockaddr_in addr)
+// asks server if they want to accept incoming connection
+void Listen(UDPSocket Socket)
 {
-	std::cout	<< "Incoming connection from "
-				<< std::to_string(addr.sin_addr.S_un.S_un_b.s_b1) << '.'
-				<< std::to_string(addr.sin_addr.S_un.S_un_b.s_b2) << '.'
-				<< std::to_string(addr.sin_addr.S_un.S_un_b.s_b3) << '.'
-				<< std::to_string(addr.sin_addr.S_un.S_un_b.s_b4)
-				<< ", Accept Connection? (y/n) ";
-
-	char input;
-	std::cin >> input;
-
-	if (input == 'y' || input == 'yes')
+	try
 	{
-		connectedClients.push_back(addr);
-		std::cout << "IP Address Added. \n";
+		sockaddr_in addr = Socket.RecvFrom(buffer, sizeof(buffer));
+
+		std::cout	<< "Incoming connection from "
+					<< std::to_string(addr.sin_addr.S_un.S_un_b.s_b1) << '.'
+					<< std::to_string(addr.sin_addr.S_un.S_un_b.s_b2) << '.'
+					<< std::to_string(addr.sin_addr.S_un.S_un_b.s_b3) << '.'
+					<< std::to_string(addr.sin_addr.S_un.S_un_b.s_b4)
+					<< ", Accept Connection? (y/n) ";
+
+		char input;
+		std::cin >> input;
+
+		std::string answer = "";
+
+		if (input == 'y' || input == 'yes')
+		{
+			connectedClients.push_back(addr);
+			answer = std::to_string(CONNECTION_ACCEPTED);
+			std::cout << "IP Address Added. Connection Accepted. \n";
+			Socket.SendTo(addr, answer.c_str(), answer.size());
+			SendAndRecievePackets(Socket);
+		}
+		else if (input == 'n' || input == 'no')
+		{
+			std::cout << "Connection Refused. \n";
+			answer = std::to_string(CONNECTION_REFUSED);
+			Socket.SendTo(addr, answer.c_str(), answer.size());
+		}
+		else
+		{
+			std::cout << "Invalid Input. \n";
+			answer = std::to_string(CONNECTION_REFUSED);
+			Socket.SendTo(addr, answer.c_str(), answer.size());
+		}
 	}
-	else if (input == 'n' || input == 'no')
+	catch (std::system_error& e)
 	{
-		std::cout << "Connection Refused. \n";
+		//std::cout << e.what();
 	}
-	else
+}
+
+// sends and recieves stream of packets
+void SendAndRecievePackets(UDPSocket Socket)
+{
+	for (int i = 0; i < NUMBER_OF_PACKETS; ++i)
 	{
-		std::cout << "Invalid Input. \n";
+		// recieve
+		sockaddr_in add = Socket.RecvFrom(buffer, sizeof(buffer));
+
+		std::cout << "Packet Recieved from "
+			<< std::to_string(add.sin_addr.S_un.S_un_b.s_b1) << '.'
+			<< std::to_string(add.sin_addr.S_un.S_un_b.s_b2) << '.'
+			<< std::to_string(add.sin_addr.S_un.S_un_b.s_b3) << '.'
+			<< std::to_string(add.sin_addr.S_un.S_un_b.s_b4)
+			<< " at " << GetTime() << " - " << buffer << "\n";
+
+		// send
+		std::string input = GetTime();
+		Socket.SendTo(add, input.c_str(), input.size());
 	}
 
+	LogPacketInfo(Socket);
 }
 
 // checks if the connected ip address has been approved for connection
@@ -146,4 +177,18 @@ void RemoveAddress(sockaddr_in addr)
 	{
 		std::cout << "Could not find requested address in connected client list. \n";
 	}
-}*/
+}
+
+// parses the header and returns the header as a unit8
+uint8_t GetHeaderCode(char* buffer)
+{
+	std::string answer = std::string(buffer);
+	int ans = 0;
+
+	for (int i = 0, j = 100; i < HEADER_CODE_SIZE; ++i, j /= 10)
+	{
+		ans += (answer[i] - '0') * j;
+	}
+
+	return uint8_t(ans);
+}

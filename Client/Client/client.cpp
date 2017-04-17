@@ -1,11 +1,21 @@
 #include "network.h"
 
 const USHORT DEFAULT_PORT = 100;
-const int NUMBER_OF_PACKETS = 700;
+const int NUMBER_OF_PACKETS = 500;
 const int BUFFER_LENGTH = 100;
+
+/***************************************
+* IP Header Codes
+****************************************/
+const int HEADER_CODE_SIZE = 3;
+const uint8_t CONNECTION_REQUEST = 201;
+const uint8_t CONNECTION_ACCEPTED = 202;
+const uint8_t CONNECTION_REFUSED = 203;
+const uint8_t PACKET_STREAM = 204;
 
 std::string serverIP;
 std::string data = "";
+std::string ipHeader = "";
 char buffer[BUFFER_LENGTH];
 clock_t start;
 std::string clientInput;
@@ -18,8 +28,7 @@ int main()
 		WSASession Session;
 		UDPSocket Socket;
 
-		HandleClientInput();
-		SendAndRecievePackets(Socket);
+		HandleClientInput(Socket);
 	}
 	catch (std::exception &ex)
 	{
@@ -54,14 +63,13 @@ void SendAndRecievePackets(UDPSocket Socket)
 	for (int i = 0; i < NUMBER_OF_PACKETS; i++)
 	{
 		data = GetTime();
-		std::cout << "Packet " << i + 1 << " Sent at: " << data << "\n"; // milliseconds
 
 		Socket.SendTo(serverIP, DEFAULT_PORT, data.c_str(), data.size());
+		std::cout << "Packet " << i + 1 << " Sent at: " << data << "\n"; // milliseconds
 
 		Socket.RecvFrom(buffer, DEFAULT_PORT);
 		std::cout << "Packet Recieved at: " << buffer << "\n";
 	}
-
 	LogPacketInfo(Socket);
 }
 
@@ -72,7 +80,7 @@ std::string GetTime()
 }
 
 // handles client input for connection to server
-void HandleClientInput()
+void HandleClientInput(UDPSocket Socket)
 {
 	bool getIP = false;
 
@@ -91,23 +99,42 @@ void HandleClientInput()
 		}
 	}
 
+	if (getIP)
+	{
+		RequestConnection(Socket);
+	}
 }
 
-// helper funcs for IP validation
-bool CheckIfNumber(int key)
+void RequestConnection(UDPSocket Socket)
 {
-	if (key >= 48 && key <= 57) // ascii keycodes for numbers 0-9
-		return true;
+	data = std::to_string(CONNECTION_REQUEST) + std::to_string(NUMBER_OF_PACKETS) + " Request to send packet stream";
+	Socket.SendTo(serverIP, DEFAULT_PORT, data.c_str(), data.size());
+	std::cout << "Request packet sent. \n";
+	Socket.RecvFrom(buffer, DEFAULT_PORT);
+
+	if (GetHeaderCode(buffer) == CONNECTION_ACCEPTED)
+	{
+		std::cout << "Request Accepted. \n";
+		SendAndRecievePackets(Socket);
+	}
 	else
-		return false;
+	{
+		std::cout << "Request denied. \n";
+	}
 }
 
-bool CheckPeriod(int key)
+// parses the header and returns the header code as a unit8
+uint8_t GetHeaderCode(char* buffer)
 {
-	if (key == 46) // ascii code for '.'
-		return true;
-	else
-		return false;
+	std::string answer = std::string(buffer);
+	int ans = 0;
+
+	for (int i = 0, j = 100; i < HEADER_CODE_SIZE; ++i, j /= 10)
+	{
+		ans += (answer[i] - '0') * j;
+	}
+
+	return uint8_t(ans);
 }
 
 // makes sure the entered ip is valid
@@ -155,4 +182,21 @@ bool ValidateIP(std::string ip)
 	}
 
 	return result;
+}
+
+// helper funcs for IP validation
+bool CheckIfNumber(int key)
+{
+	if (key >= 48 && key <= 57) // ascii keycodes for numbers 0-9
+		return true;
+	else
+		return false;
+}
+
+bool CheckPeriod(int key)
+{
+	if (key == 46) // ascii code for '.'
+		return true;
+	else
+		return false;
 }
