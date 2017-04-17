@@ -2,7 +2,7 @@
 
 const USHORT DEFAULT_PORT = 100;
 const PCSTR SERVER_ADDRESS = "127.0.0.1";
-const int NUMBER_OF_PACKETS = 500;
+const int NUMBER_OF_PACKETS = 5;
 const int BUFFER_LENGTH = 100;
 
 /***************************************
@@ -25,21 +25,12 @@ int main()
 	{
 		start = std::clock();
 		WSASession Session;
-		UDPSocket Socket;
+		UDPSocket* Socket = new UDPSocket();
 
-		Socket.Bind(DEFAULT_PORT);
+		Socket->Bind(DEFAULT_PORT);
 		while (serverOptions != "exit")
 		{
-			Listen(Socket);
-
-			std::cout << "Awaiting Input: ";
-			std::cin >> serverOptions;
-
-			if (serverOptions == "sort")
-			{
-				Socket.GetSortedPingTimes();
-				serverOptions = "";
-			}
+			Listen(*Socket);
 		}
 	}
 	catch (std::system_error& e)
@@ -131,6 +122,8 @@ void SendAndRecievePackets(UDPSocket Socket)
 		// recieve
 		sockaddr_in add = Socket.RecvFrom(buffer, sizeof(buffer));
 
+		Socket.timeStamp.push_back(std::clock());
+
 		std::cout << "Packet Recieved from "
 			<< std::to_string(add.sin_addr.S_un.S_un_b.s_b1) << '.'
 			<< std::to_string(add.sin_addr.S_un.S_un_b.s_b2) << '.'
@@ -144,6 +137,15 @@ void SendAndRecievePackets(UDPSocket Socket)
 	}
 
 	LogPacketInfo(Socket);
+
+	std::cout << "Awaiting Input: ";
+	std::cin >> serverOptions;
+
+	if (serverOptions == "sort")
+	{
+		Socket.GetSortedPingTimes();
+		serverOptions = "";
+	}
 }
 
 // checks if the connected ip address has been approved for connection

@@ -100,7 +100,7 @@ public:
 		if (ret < 0)
 			throw std::system_error(WSAGetLastError(), std::system_category(), "recvfrom failed");
 
-		timeStamp.push_back(std::clock());
+		//timeStamp.push_back(std::clock());
 
 		totalRecieved++; // Added
 

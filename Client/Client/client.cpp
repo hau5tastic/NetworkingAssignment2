@@ -1,7 +1,7 @@
 #include "network.h"
 
 const USHORT DEFAULT_PORT = 100;
-const int NUMBER_OF_PACKETS = 500;
+const int NUMBER_OF_PACKETS = 5;
 const int BUFFER_LENGTH = 100;
 
 /***************************************
